@@ -1,10 +1,13 @@
 package com.github.aman.coronavirustracker.services;
 
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,6 +24,14 @@ public class CoronavirusDataService {
                                         .uri(URI.create(VIRUS_DATA))
                                         .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response.body());
+        StringReader csvReader = new StringReader(response.body());
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvReader);
+        for (CSVRecord record : records) {
+            String state = record.get("Province/State");
+            System.out.println(state);
+//            String customerNo = record.get("CustomerNo");
+//            String name = record.get("Name");
+        }
+
     }
 }
