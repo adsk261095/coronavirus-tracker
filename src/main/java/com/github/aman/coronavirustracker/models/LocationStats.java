@@ -4,6 +4,14 @@ public class LocationStats {
     private String state;
     private String country;
     private int latestCount;
+    private int dayOverDayChange;
+
+    public LocationStats(String state, String country, int latestCount, int dayOverDayChange) {
+        this.state = state;
+        this.country = country;
+        this.latestCount = latestCount;
+        this.dayOverDayChange = dayOverDayChange;
+    }
 
     @Override
     public String toString() {
@@ -11,13 +19,8 @@ public class LocationStats {
                 "state='" + state + '\'' +
                 ", country='" + country + '\'' +
                 ", latestCount=" + latestCount +
+                ", dayOverDayChange=" + dayOverDayChange +
                 '}';
-    }
-
-    public LocationStats(String state, String country, int latestCount) {
-        this.state = state;
-        this.country = country;
-        this.latestCount = latestCount;
     }
 
     public String getState() {
@@ -43,4 +46,13 @@ public class LocationStats {
     public void setLatestCount(int latestCount) {
         this.latestCount = latestCount;
     }
+
+    public int getDayOverDayChange() {
+        return dayOverDayChange;
+    }
+
+    public void setDayOverDayChange(int dayOverDayChange) {
+        this.dayOverDayChange = dayOverDayChange;
+    }
+
 }
