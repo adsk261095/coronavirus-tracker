@@ -4,6 +4,8 @@ package com.github.aman.coronavirustracker.services;
 import com.github.aman.coronavirustracker.models.LocationStats;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,10 @@ import java.util.List;
 
 @Service
 public class CoronavirusDataService {
-    private static String VIRUS_DATA = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
+
+    @Value("${virus_data.url}")
+    private String VIRUS_DATA;
+
     private List<LocationStats> allStats = new ArrayList<>();
     private String latestDate;
     private int totalReportedCases;
@@ -48,6 +53,7 @@ public class CoronavirusDataService {
          * once currentStats in completely created
          * inorder to avoid synchronisation problems
          */
+        System.out.println(VIRUS_DATA);
         List<LocationStats> currentStats = new ArrayList<>();
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -60,8 +66,12 @@ public class CoronavirusDataService {
 
         StringReader csvReader = new StringReader(response.body());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvReader);
+
+        int presentDayCount,previousDayCount;
         for (CSVRecord record : records) {
-            LocationStats currentLocationStats = new LocationStats(record.get("Province/State"), record.get("Country/Region"), Integer.parseInt(record.get(record.size()-1)), Integer.parseInt(record.get(record.size()-1))-Integer.parseInt(record.get(record.size()-2)));
+            presentDayCount = Integer.parseInt(record.get(record.size()-1).length()==0?"0":record.get(record.size()-1));
+            previousDayCount = Integer.parseInt(record.get(record.size()-2).length()==0?"0":record.get(record.size()-2));
+            LocationStats currentLocationStats = new LocationStats(record.get("Province/State"), record.get("Country/Region"), presentDayCount, presentDayCount-previousDayCount);
             currentStats.add(currentLocationStats);
         }
         currentStats.sort((x,y)->{
@@ -69,14 +79,7 @@ public class CoronavirusDataService {
         });
         this.totalReportedCases = currentStats.stream().mapToInt(x->x.getLatestCount()).sum();
         this.totalNewCases = currentStats.stream().mapToInt(x->x.getDayOverDayChange()).sum();
-//        currentStats.forEach(x->{
-//            totalNewCases+=x.getDayOverDayChange();
-//            totalReportedCases+=x.getLatestCount();
-//        });
-//
-
         this.allStats = currentStats;
-//        System.out.println(allStats);
 
     }
 }
